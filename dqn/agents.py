@@ -31,7 +31,8 @@ class DQNAgent:
                  max_eps=1.0,
                  lmbda=0.001,
                  batch_size=64,
-                 gamma=0.99):
+                 gamma=0.99,
+                 **kwargs):
 
         self.env = env
         self.fc_layers = fc_layers
@@ -45,6 +46,7 @@ class DQNAgent:
 
         dtype = utils.get_transition_dtype(self.env)
         self._memory = np.recarray(self.replay_memory_size, dtype=dtype)
+#        self.memory = deque(maxlen=self.replay_memory_size)
 
         self._t = 0  # internal step counter
         self.epsilon = self.max_eps
@@ -79,13 +81,15 @@ class DQNAgent:
         self.model.save(model_file)
 
     def sample(self):
-        idx = np.random.choice(min(self.t, self.replay_memory_size),
-                               size=min(self.t, self.batch_size),
-                               replace=False)
-        return self._memory[idx]
 
-#        np.random.shuffle(self.memory)  # avoid copy
-#        return self.memory[:min(self.t, self.batch_size)]
+        if self.t < self.batch_size:
+            return self.memory
+        else:
+#            idx = np.random.choice(min(self.t, self.replay_memory_size),
+#                                   size=self.batch_size, replace=False)
+            idx = np.random.randint(0, min(self.t, self.replay_memory_size),
+                                    size=self.batch_size)
+            return self.memory[idx]
 
     def observe(self, state, reward, action, next_state, done):
 
@@ -161,7 +165,7 @@ class DQNAgent:
                 state = self.env.reset()
                 score = 0.0
 
-                for _ in range(max_steps):
+                for steps in range(1, max_steps + 1):
 
                     if render:
                         self.env.render()
@@ -170,6 +174,7 @@ class DQNAgent:
                         action = self.env.action_space.sample()
                     else:
                         action = self.act(state)
+
                     next_state, reward, done, _ = self.env.step(action)
 
                     self.observe(state, reward, action, next_state, done)
@@ -190,9 +195,9 @@ class DQNAgent:
                 average_scores.append(average_score)
 
                 if verbose:
-                    print('Episode: %i, Epsilon: %.2f, Current score: %.2f, '
-                          'Average score: %.2f' %
-                          (episode, self.epsilon, score, average_score))
+                    print('Episode: %i, Steps: %i, Epsilon: %.2f, '
+                          'Current score: %.2f, Average score: %.2f' %
+                          (episode, steps, self.epsilon, score, average_score))
 
                 if write and episode % save_weights_interval == 0:
                     self.save_weights(weights_file % (episode, average_score))

@@ -2,15 +2,15 @@
 # -*- coding: utf-8 -*-
 
 import argparse
-import gym
 import os
 from shutil import copyfile
 import yaml
 
-# local imports
-import dqn
-
+os.environ["CUDA_DEVICE_ORDER"] = 'PCI_BUS_ID'
+os.environ["CUDA_VISIBLE_DEVICES"] = ''
 os.environ['PYTHONHASHSEED'] = '0'
+
+import dqn
 
 
 def main():
@@ -41,7 +41,7 @@ def main():
 
     copyfile(args.config_file, os.path.join(parent_dir, args.config_file))
 
-    env = gym.make('LunarLander-v2')
+    env = dqn.get_env()
     env.seed(params['seed'])
 
     agent_type = getattr(dqn.agents, params['agent_type'])
@@ -60,7 +60,8 @@ def main():
             max_eps=params['max_eps'],
             lmbda=params['lmbda'],
             batch_size=params['batch_size'],
-            gamma=params['gamma']
+            gamma=params['gamma'],
+            target_update_interval=params['target_update_interval']
         )
 
         output_dir = os.path.join(parent_dir, 'repeat%i' % repeat)
@@ -79,4 +80,5 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    with dqn.Profiler(['time'], [10]):
+        main()
