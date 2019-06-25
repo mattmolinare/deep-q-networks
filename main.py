@@ -32,7 +32,7 @@ def main():
     args = parser.parse_args()
 
     with open(args.config_file, 'r') as stream:
-        params = yaml.load(stream)
+        params = yaml.safe_load(stream)
 
     parent_dir = os.path.abspath(args.parent_dir)
     if os.path.isdir(parent_dir):
@@ -49,17 +49,28 @@ def main():
     for repeat in range(1, args.repeats + 1):
 
         dqn.set_seeds(params['seed'])
+        dqn.new_session()
 
-        agent = agent_type(env, params)
+        agent = agent_type(
+            env,
+            fc_layers=params['fc_layers'],
+            learning_rate=params['learning_rate'],
+            replay_memory_size=params['replay_memory_size'],
+            min_eps=params['min_eps'],
+            max_eps=params['max_eps'],
+            lmbda=params['lmbda'],
+            batch_size=params['batch_size'],
+            gamma=params['gamma']
+        )
 
         output_dir = os.path.join(parent_dir, 'repeat%i' % repeat)
 
         agent.fit(
-            params['num_episodes'],
-            params['num_consecutive_episodes'],
-            params['max_steps'],
-            params['min_score'],
-            params['max_average_score'],
+            num_episodes=params['num_episodes'],
+            num_consecutive_episodes=params['num_consecutive_episodes'],
+            max_steps=params['max_steps'],
+            min_score=params['min_score'],
+            max_average_score=params['max_average_score'],
             output_dir=output_dir,
             save_weights_interval=params['save_weights_interval'],
             render=False,

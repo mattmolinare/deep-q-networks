@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import gym
 import keras.backend as K
 import numpy as np
 import random
@@ -7,9 +8,15 @@ import tensorflow as tf
 
 __all__ = [
     'compute_epsilon',
-    'get_memory_dtype',
+    'get_env',
+    'get_transition_dtype',
+    'new_session',
     'set_seeds'
 ]
+
+
+def get_env():
+    return gym.make('LunarLander-v2')
 
 
 def compute_epsilon(t, min_eps, max_eps, lmbda):
@@ -17,11 +24,12 @@ def compute_epsilon(t, min_eps, max_eps, lmbda):
 
 
 def set_seeds(seed):
-
     random.seed(seed)
     np.random.seed(seed)
     tf.set_random_seed(seed)
 
+
+def new_session():
     K.clear_session()
     config = tf.ConfigProto(intra_op_parallelism_threads=1,
                             inter_op_parallelism_threads=1)
@@ -29,7 +37,7 @@ def set_seeds(seed):
     K.set_session(sess)
 
 
-def get_memory_dtype(env):
+def get_transition_dtype(env):
 
     state_dtype = env.observation_space.dtype
     state_shape = env.observation_space.shape

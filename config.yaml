@@ -1,17 +1,17 @@
-agent_type: DQNAgent
+agent_type: DQNAgent  # {DQNAgent, TargetDQNAgent, DDQNAgent, DuelingDQNAgent, DuelingDDQAgent}
 fc_layers: [512]
 learning_rate: 0.0003
-replay_memory_size: 100000
+replay_memory_size: 1000000
 min_eps: 0.1
 max_eps: 1.0
 lmbda: 0.001
 batch_size: 64
 gamma: 0.99
-target_update_interval: 1
+target_update_interval: 10000
 num_episodes: 1000
 num_consecutive_episodes: 100
 max_steps: 1000
-min_score: -1000.0
+min_score: -500.0
 max_average_score: 250.0
 save_weights_interval: 10
 seed: 0
