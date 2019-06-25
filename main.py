@@ -43,28 +43,14 @@ def main():
 
     env = gym.make('LunarLander-v2')
     env.seed(params['seed'])
-    dqn.set_seeds(params['seed'])
 
-    if params['use_dueling_dqn']:
-        agent_type = dqn.DuelingDQNAgent
-    else:
-        agent_type = dqn.DQNAgent
+    agent_type = getattr(dqn.agents, params['agent_type'])
 
     for repeat in range(1, args.repeats + 1):
 
-        agent = agent_type(
-            env,
-            params['fc_layers'],
-            params['learning_rate'],
-            params['replay_memory_size'],
-            params['min_eps'],
-            params['max_eps'],
-            params['lmbda'],
-            params['batch_size'],
-            params['gamma'],
-            params['target_update_interval'],
-            params['use_double_dqn']
-        )
+        dqn.set_seeds(params['seed'])
+
+        agent = agent_type(env, params)
 
         output_dir = os.path.join(parent_dir, 'repeat%i' % repeat)
 

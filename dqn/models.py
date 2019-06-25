@@ -4,7 +4,7 @@ import keras.backend as K
 from keras.layers import Dense, Lambda
 from keras.models import Sequential
 from keras.optimizers import Adam
-
+import tensorflow as tf
 __all__ = [
     'build_dqn_model',
     'build_dueling_dqn_model'
@@ -12,7 +12,7 @@ __all__ = [
 
 
 def compile_model(model, learning_rate):
-    model.compile(optimizer=Adam(lr=learning_rate), loss='mse')
+    model.compile(optimizer=Adam(lr=learning_rate), loss=tf.losses.huber_loss)
 
 
 def build_dqn_model(env, fc_layers, learning_rate):
@@ -51,7 +51,7 @@ def build_dueling_dqn_model(env, fc_layers, learning_rate):
     model.add(Dense(env.action_space.n + 1, activation='linear'))
 
     # dueling layer
-    model.add(Lambda(dueling_layer, output_shape=env.action_space.n))
+    model.add(Lambda(dueling_layer, output_shape=(env.action_space.n,)))
 
     compile_model(model, learning_rate)
 

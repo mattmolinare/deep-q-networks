@@ -12,36 +12,50 @@ from . import utils
 
 __all__ = [
     'DQNAgent',
-    'DuelingDQNAgent'
+    'TargetDQNAgent',
+    'DDQNAgent',
+    'DuelingDQNAgent',
+    'DuelingDDQNAgent'
 ]
 
 
 class DQNAgent:
 
-    def __init__(self, env, fc_layers, learning_rate, replay_memory_size,
-                 min_eps, max_eps, lmbda, batch_size, gamma,
-                 target_update_interval, use_double_dqn):
+    defaults = {
+        'fc_layers': [512],
+        'learning_rate': 0.0003,
+        'replay_memory_size': 100000,
+        'min_eps': 0.1,
+        'max_eps': 1.0,
+        'lmbda': 0.001,
+        'batch_size': 64,
+        'gamma': 0.99,
+    }
+
+    def __init__(self, env, params):
 
         self.env = env
-        self.fc_layers = fc_layers
-        self.learning_rate = learning_rate
-        self.replay_memory_size = replay_memory_size
-        self.min_eps = min_eps
-        self.max_eps = max_eps
-        self.lmbda = lmbda
-        self.batch_size = batch_size
-        self.gamma = gamma
-        self.target_update_interval = target_update_interval
-        self.use_double_dqn = use_double_dqn
 
-        self.model = self.build_model()
-        self.target_model = self.build_model()
+        for key, val in self.defaults.items():
+            setattr(self, key, params.get(key, val))
 
         self._memory = np.ndarray(self.replay_memory_size,
                                   dtype=utils.get_memory_dtype(self.env))
 
-        self.t = 0
+        self._t = 0
         self.epsilon = self.max_eps
+
+        self.model = self.build_model()
+
+    @property
+    def t(self):
+        return self._t
+
+    @t.setter
+    def t(self, value):
+        self._t = value
+        self.epsilon = utils.compute_epsilon(self.t, self.min_eps,
+                                             self.max_eps, self.lmbda)
 
     @property
     def memory(self):
@@ -53,13 +67,9 @@ class DQNAgent:
 
     def load_weights(self, weights_file):
         self.model.load_weights(weights_file)
-        self.update_target_model()
 
     def save_weights(self, weights_file):
         self.model.save_weights(weights_file)
-
-    def update_target_model(self):
-        self.target_model.set_weights(self.model.get_weights())
 
     def sample(self):
         return np.random.choice(self.memory, size=min(self.t, self.batch_size),
@@ -78,18 +88,18 @@ class DQNAgent:
     def act(self, state):
         return self.model.predict_on_batch(state[np.newaxis])[0].argmax()
 
+    def compute_discounted(self, batch):
+
+        q_tp1 = self.model.predict_on_batch(batch['next_state'])
+        discounted = q_tp1.max(axis=1)
+
+        return discounted
+
     def replay(self):
 
         batch = self.sample()
 
-        q_values = self.model.predict_on_batch(batch['state'])
-        target_q_values = self.target_model.predict_on_batch(batch['state'])
-
-        if self.use_double_dqn:
-            actions = q_values.argmax(axis=1)
-            discounted = target_q_values[np.arange(batch.size), actions]
-        else:
-            discounted = target_q_values.max(axis=1)
+        discounted = self.compute_discounted(batch)
 
         targets = np.where(
             batch['done'],
@@ -97,12 +107,10 @@ class DQNAgent:
             batch['reward'] + self.gamma * discounted
         )
 
-        q_values[np.arange(batch.size), batch['action']] = targets
+        q_t = self.model.predict_on_batch(batch['state'])
+        q_t[np.arange(batch.size), batch['action']] = targets
 
-        self.model.train_on_batch(batch['state'], q_values)
-
-        if self.t % self.target_update_interval == 0:
-            self.update_target_model()
+        self.model.train_on_batch(batch['state'], q_t)
 
     def fit(self, num_episodes, num_consecutive_episodes, max_steps, min_score,
             max_average_score, output_dir=None, save_weights_interval=5,
@@ -124,7 +132,7 @@ class DQNAgent:
             cwd = os.getcwd()
             os.chdir(output_dir)
             os.mkdir('weights')
-            weights_file = os.path.join('weights', 'episode%i.h5')
+            weights_file = os.path.join('weights', 'episode%05i_score%04i.h5')
 
         try:
 
@@ -152,9 +160,6 @@ class DQNAgent:
                     score += reward
 
                     self.t += 1
-                    self.epsilon = utils.compute_epsilon(self.t, self.min_eps,
-                                                         self.max_eps,
-                                                         self.lmbda)
 
                     if done or score < min_score:
                         break
@@ -171,7 +176,7 @@ class DQNAgent:
                           (episode, self.epsilon, score, average_score))
 
                 if write and episode % save_weights_interval == 0:
-                    self.save_weights(weights_file % episode)
+                    self.save_weights(weights_file % (episode, average_score))
 
                 if average_score >= max_average_score:
                     break
@@ -180,7 +185,7 @@ class DQNAgent:
             pass
 
         if write:
-            self.save_weights(weights_file % episode)
+            self.save_weights(weights_file % (episode, average_score))
             np.save('scores.npy', scores)
             np.save('average_scores.npy', average_scores)
             os.chdir(cwd)
@@ -220,8 +225,57 @@ class DQNAgent:
         return scores
 
 
+class TargetDQNAgent:
+
+    defaults = DQNAgent.defaults.update({
+        'target_update_interval': 10000
+    })
+
+    def __init__(self, env, params):
+        super().__init__(env, params)
+        self.target_model = self.build_model()
+
+    def load_weights(self, weights_file):
+        super().load_weights(weights_file)
+        self.update_target_model()
+
+    def update_target_model(self):
+        self.target_model.set_weights(self.model.get_weights())
+
+    def compute_discounted(self, batch):
+
+        target_q_tp1 = self.target_model.predict_on_batch(batch['next_state'])
+        discounted = target_q_tp1.max(axis=1)
+
+        return discounted
+
+    def replay(self):
+
+        super().replay()
+
+        if self.t % self.target_update_interval == 0:
+            self.update_target_model()
+
+
+class DDQNAgent(TargetDQNAgent):
+
+    def compute_discounted(self, batch):
+
+        q_tp1 = self.model.predict_on_batch(batch['next_state'])
+        target_q_tp1 = self.target_model.predict_on_batch(batch['next_state'])
+
+        actions = q_tp1.argmax(axis=1)
+        discounted = target_q_tp1[np.arange(batch.size), actions]
+
+        return discounted
+
+
 class DuelingDQNAgent(DQNAgent):
 
     def build_model(self):
-        self._model = models.build_dueling_dqn_model(self.env, self.fc_layers,
-                                                     self.learning_rate)
+        return models.build_dueling_dqn_model(self.env, self.fc_layers,
+                                              self.learning_rate)
+
+
+class DuelingDDQNAgent(DDQNAgent, DuelingDQNAgent):
+    pass

@@ -22,6 +22,7 @@ def set_seeds(seed):
     np.random.seed(seed)
     tf.set_random_seed(seed)
 
+    K.clear_session()
     config = tf.ConfigProto(intra_op_parallelism_threads=1,
                             inter_op_parallelism_threads=1)
     sess = tf.Session(graph=tf.get_default_graph(), config=config)
@@ -30,8 +31,8 @@ def set_seeds(seed):
 
 def get_memory_dtype(env):
 
-    state_shape = env.observation_space.shape
     state_dtype = env.observation_space.dtype
+    state_shape = env.observation_space.shape
 
     dtype = np.dtype([
         ('state', state_dtype, state_shape),
