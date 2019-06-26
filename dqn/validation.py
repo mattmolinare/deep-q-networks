@@ -6,7 +6,8 @@ import numpy as np
 import os
 
 __all__ = [
-    'get_scores'
+    'get_scores',
+    'plot_scores'
 ]
 
 
@@ -16,44 +17,45 @@ def get_scores(parent_dir):
     """
     output_dirs = sorted(glob.iglob(os.path.join(parent_dir, 'repeat*')))
 
-    scores = []
-    average_scores = []
+    scores_list = []
+    average_scores_list = []
 
     for output_dir in output_dirs:
 
-        scores.append(np.load(os.path.join(output_dir, 'scores.npy')))
-        average_scores.append(np.load(os.path.join(output_dir,
-                                                   'average_scores.npy')))
+        try:
+            scores = np.load(os.path.join(output_dir, 'scores.npy'))
+            average_scores = np.load(os.path.join(output_dir,
+                                                  'average_scores.npy'))
+        except FileNotFoundError:
+            pass
 
-    scores = _to_masked_array(scores)
-    average_scores = _to_masked_array(average_scores)
+        scores_list.append(scores)
+        average_scores_list.append(average_scores)
 
-    return scores, average_scores
+    s = _to_masked_array(scores_list)
+    s_ave = _to_masked_array(average_scores_list)
+
+    return s, s_ave
 
 
-def _to_masked_array(scores):
+def _to_masked_array(scores_list):
 
-    repeats = len(scores)
-    num_episodes = max(len(x) for x in scores)
+    repeats = len(scores_list)
+    num_episodes = max(map(len, scores_list))
 
-    ma = np.ma.empty((num_episodes, repeats))
-    for i, x in enumerate(scores):
-        ma[:x.size, i] = x
-        ma[x.size:, i] = np.ma.masked
+    s = np.ma.masked_all((num_episodes, repeats))
+    for i, scores in enumerate(scores_list):
+        s[:scores.size, i] = scores
 
-    return ma
+    return s
 
 
 def plot_scores(parent_dir, fig=None, color=None, label=None, **fig_kwargs):
 
-    _, average_scores = get_scores(parent_dir)
+    _, s_ave = get_scores(parent_dir)
 
-    num_episodes = average_scores.shape[0]
+    num_episodes = s_ave.shape[0]
     episodes = np.arange(1, num_episodes + 1)
-
-    median = np.median(average_scores, axis=1)
-    min_ = average_scores.min(axis=1)
-    max_ = average_scores.max(axis=1)
 
     if fig is None:
         fig = pyplot.figure(**fig_kwargs)
@@ -61,14 +63,14 @@ def plot_scores(parent_dir, fig=None, color=None, label=None, **fig_kwargs):
 
     ax = fig.gca()
 
-    ax.plot(median, c=color, lw=2, label=label)
-    ax.fill_between(episodes, min_, max_, color=color, lw=0,
-                    alpha=0.3)
+    ax.plot(np.median(s_ave, axis=1), color=color, linewidth=2, label=label)
+    ax.fill_between(episodes, s_ave.min(axis=1), s_ave.max(axis=1),
+                    color=color, linewidth=0, alpha=0.3)
 
-    ax.hlines(200, 1, num_episodes, ls='-.')
+    ax.hlines(200, 1, num_episodes, linestyle='-.')
     ax.set_xlim(1, num_episodes)
 
     ax.set_xlabel('Training episode')
-    ax.set_ylabel('Average reward')
+    ax.set_ylabel('Reward')
 
     return fig
