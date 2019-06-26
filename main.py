@@ -11,7 +11,7 @@ os.environ["CUDA_VISIBLE_DEVICES"] = ''
 os.environ['PYTHONHASHSEED'] = '0'
 
 # local imports
-import dqn
+import dqn  # noqa: E402
 
 
 def main():
@@ -81,5 +81,5 @@ def main():
 
 
 if __name__ == '__main__':
-    with dqn.Profiler(['time'], [10]) as pf:
+    with dqn.Profiler(['time'], [10]):
         main()
