@@ -22,17 +22,9 @@ class DQNAgent:
     """Vanilla Deep Q Network
     """
 
-    def __init__(self,
-                 env,
-                 fc_layers=[512],
-                 learning_rate=0.0003,
-                 replay_memory_size=100000,
-                 min_eps=0.1,
-                 max_eps=1.0,
-                 lmbda=0.001,
-                 batch_size=64,
-                 gamma=0.99,
-                 **kwargs):
+    def __init__(self, env, fc_layers=[512], learning_rate=0.0003,
+                 replay_memory_size=100000, min_eps=0.1, max_eps=1.0,
+                 lmbda=0.001, batch_size=64, gamma=0.99, **kwargs):
 
         self.env = env
         self.fc_layers = fc_layers
@@ -46,7 +38,6 @@ class DQNAgent:
 
         dtype = utils.get_transition_dtype(self.env)
         self._memory = np.recarray(self.replay_memory_size, dtype=dtype)
-#        self.memory = deque(maxlen=self.replay_memory_size)
 
         self._t = 0  # internal step counter
         self.epsilon = self.max_eps
@@ -101,6 +92,8 @@ class DQNAgent:
         transition.next_state = next_state
         transition.done = done
 
+        self.t += 1  # increment counter, update epsilon
+
     def act(self, state):
         return self.model.predict_on_batch(state[np.newaxis])[0].argmax()
 
@@ -128,17 +121,10 @@ class DQNAgent:
 
         self.model.train_on_batch(batch.state, q_t)
 
-    def fit(self,
-            num_episodes=1000,
-            num_consecutive_episodes=100,
-            max_steps=1000,
-            min_score=-np.inf,
-            max_average_score=np.inf,
-            output_dir=None,
-            save_weights_interval=5,
-            render=False,
-            verbose=True,
-            **kwargs):
+    def fit(self, num_episodes=1000, num_consecutive_episodes=100,
+            max_steps=1000, min_score=-np.inf, max_average_score=np.inf,
+            output_dir=None, save_weights_interval=5, render=False,
+            verbose=True):
 
         rolling_scores = deque(maxlen=num_consecutive_episodes)
         scores = []
@@ -178,12 +164,10 @@ class DQNAgent:
                     next_state, reward, done, _ = self.env.step(action)
 
                     self.observe(state, reward, action, next_state, done)
-                    self.replay()  # train
+                    self.replay()  # train using experience replay
 
                     state = next_state
                     score += reward
-
-                    self.t += 1  # increment counter, update epsilon
 
                     if done or score < min_score:
                         break
@@ -217,14 +201,11 @@ class DQNAgent:
             os.chdir(cwd)
 
 
-class TargetDQNAgent:
+class TargetDQNAgent(DQNAgent):
     """DQN with target model updated regularly
     """
 
-    def __init__(self,
-                 env,
-                 target_update_interval=10000,
-                 **kwargs):
+    def __init__(self, env, target_update_interval=10000, **kwargs):
 
         super().__init__(env, **kwargs)
 

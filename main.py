@@ -10,6 +10,7 @@ os.environ["CUDA_DEVICE_ORDER"] = 'PCI_BUS_ID'
 os.environ["CUDA_VISIBLE_DEVICES"] = ''
 os.environ['PYTHONHASHSEED'] = '0'
 
+# local imports
 import dqn
 
 
@@ -80,5 +81,5 @@ def main():
 
 
 if __name__ == '__main__':
-    with dqn.Profiler(['time'], [10]):
+    with dqn.Profiler(['time'], [10]) as pf:
         main()

@@ -7,15 +7,23 @@ import numpy as np
 import pstats
 import random
 import tensorflow as tf
+import yaml
 
 __all__ = [
     'compute_epsilon',
     'get_env',
     'get_transition_dtype',
     'new_session',
+    'read_yaml',
     'set_seeds',
     'Profiler'
 ]
+
+
+def read_yaml(fname):
+    with open(fname, 'r') as fp:
+        data = yaml.safe_load(fp)
+    return data
 
 
 def get_env():
