@@ -1,13 +1,16 @@
 # -*- coding: utf-8 -*-
 
+import keras
 import keras.backend as K
 from keras.layers import Dense, Lambda
 from keras.models import Sequential
 from keras.optimizers import Adam
 import tensorflow as tf
+
 __all__ = [
     'build_dqn_model',
-    'build_dueling_dqn_model'
+    'build_dueling_dqn_model',
+    'load_model'
 ]
 
 
@@ -56,3 +59,8 @@ def build_dueling_dqn_model(env, fc_layers, learning_rate):
     compile_model(model, learning_rate)
 
     return model
+
+
+def load_model(model_file):
+    custom_objects = {'huber_loss': tf.losses.huber_loss}
+    return keras.models.load_model(model_file, custom_objects=custom_objects)

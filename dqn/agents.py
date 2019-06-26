@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from collections import deque
+import gym
 import numpy as np
 import os
 
@@ -139,10 +140,9 @@ class DQNAgent:
             write = True
 
         if write:
-            cwd = os.getcwd()
-            os.chdir(output_dir)
-            os.mkdir('weights')
-            weights_file = os.path.join('weights', 'episode%05i_score%05i.h5')
+            os.mkdir(os.path.join(output_dir, 'weights'))
+            weights_file = os.path.join(output_dir, 'weights',
+                                        'episode%05i_score%05i.h5')
 
         try:
 
@@ -195,10 +195,46 @@ class DQNAgent:
 
         if write:
             self.save_weights(weights_file % (episode, average_score))
-            self.save_model('model.h5')
-            np.save('scores.npy', scores)
-            np.save('average_scores.npy', average_scores)
-            os.chdir(cwd)
+            self.save_model(os.path.join(output_dir, 'model.h5'))
+            np.save(os.path.join(output_dir, 'scores.npy'), scores)
+            np.save(os.path.join(output_dir, 'average_scores.npy'),
+                    average_scores)
+
+    def test(self, num_iterations=100, max_steps=1000, video_dir=None,
+             render=False, verbose=True):
+
+        env = self.env
+
+        if video_dir is not None:
+            env = gym.wrapper.Monitor(env, video_dir, force=True)
+
+        scores = np.empty(num_iterations)
+
+        for i in range(num_iterations):
+
+            state = env.reset()
+            score = 0.0
+
+            for _ in range(max_steps):
+
+                if render:
+                    env.render()
+
+                action = self.act(state)
+                next_state, reward, done, _ = self.env.step(action)
+
+                state = next_state
+                score += reward
+
+                if done:
+                    break
+
+            scores[i] = score
+
+            if verbose:
+                print('Iteration: %i, Score: %.2f' % (i + 1, score))
+
+        return scores
 
 
 class TargetDQNAgent(DQNAgent):
