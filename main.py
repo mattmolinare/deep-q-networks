@@ -65,7 +65,7 @@ def main():
             target_update_interval=params['target_update_interval']
         )
 
-        output_dir = os.path.join(parent_dir, 'repeat%i' % repeat)
+        output_dir = os.path.join(parent_dir, 'repeat%03i' % repeat)
 
         agent.fit(
             num_episodes=params['num_episodes'],
