@@ -49,8 +49,8 @@ def _get_weights_file(parent_dir):
 
 
 def load_agent(parent_dir):
-    """Load the agent with the highest average rolling score at any point
-    during training
+    """Load the agent with the highest average score at any point during
+    training
     """
     params = utils.read_yaml(os.path.join(parent_dir, 'config.yaml'))
     agent = _get_agent(params)
@@ -101,7 +101,7 @@ def get_scores(parent_dir):
 
 
 def plot_scores(parent_dir, fig=None, color=None, label=None, **fig_kwargs):
-    """Plot the median average rolling scores over a set of repeated runs
+    """Plot the mean average scores over a set of repeated runs
     """
     _, s_ave = get_scores(parent_dir)
 
