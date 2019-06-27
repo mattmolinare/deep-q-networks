@@ -108,15 +108,18 @@ def plot_scores(parent_dir, fig=None, color=None, label=None, **fig_kwargs):
     num_episodes = s_ave.shape[0]
     episodes = np.arange(1, num_episodes + 1)
 
+    mean = s_ave.mean(axis=1)
+    std = s_ave.std(axis=1)
+
     if fig is None:
         fig = pyplot.figure(**fig_kwargs)
         fig.clf()
 
     ax = fig.gca()
 
-    ax.plot(np.median(s_ave, axis=1), color=color, linewidth=2, label=label)
-    ax.fill_between(episodes, s_ave.min(axis=1), s_ave.max(axis=1),
-                    color=color, linewidth=0, alpha=0.3)
+    line, = ax.plot(mean, color=color, linewidth=2, label=label)
+    ax.fill_between(episodes, mean - std, mean + std, color=line.get_color(),
+                    linewidth=0, alpha=0.4)
 
     ax.hlines(200, 1, num_episodes, linestyle='-.')
     ax.set_xlim(1, num_episodes)
