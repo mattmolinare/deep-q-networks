@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import argparse
+import numpy as np
 import os
 import yaml
 
@@ -11,19 +12,27 @@ import dqn
 
 def train(args, params):
 
+    repeats = np.arange(1, args.repeats + 1)
+
     parent_dir = os.path.abspath(args.parent_dir)
     if os.path.isdir(parent_dir):
-        raise IOError('Parent directory already exists: ' + parent_dir)
-    os.makedirs(parent_dir)
-
-    dqn.write_yaml(os.path.join(parent_dir, 'config.yaml'), params)
+        p = dqn.read_yaml(os.path.join(parent_dir, 'config.yaml'))
+        if params == p:
+            print('Found matching config in ' + parent_dir)
+            print('Appending to existing repeats')
+            repeats += len(dqn.validation._detect_output_dirs(parent_dir))
+        else:
+            raise IOError('Parent directory already exists: ' + parent_dir)
+    else:
+        os.makedirs(parent_dir)
+        dqn.write_yaml(os.path.join(parent_dir, 'config.yaml'), params)
 
     env = dqn.get_env()
     env.seed(params['seed'])
 
     agent_type = getattr(dqn.agents, params['agent_type'])
 
-    for repeat in range(1, args.repeats + 1):
+    for repeat in repeats:
 
         dqn.set_seeds(params['seed'])
         dqn.new_session()
