@@ -3,44 +3,20 @@
 
 import argparse
 import os
-from shutil import copyfile
 import yaml
 
-os.environ["CUDA_DEVICE_ORDER"] = 'PCI_BUS_ID'
-os.environ["CUDA_VISIBLE_DEVICES"] = ''
-os.environ['PYTHONHASHSEED'] = '0'
-
 # local imports
-import dqn  # noqa: E402
+import dqn
 
 
-def main():
-
-    parser = argparse.ArgumentParser()
-    parser.add_argument(
-        'config_file',
-        type=str
-    )
-    parser.add_argument(
-        'parent_dir',
-        type=str,
-    )
-    parser.add_argument(
-        '--repeats',
-        type=int,
-        default=1
-    )
-    args = parser.parse_args()
-
-    with open(args.config_file, 'r') as stream:
-        params = yaml.safe_load(stream)
+def train(args, params):
 
     parent_dir = os.path.abspath(args.parent_dir)
     if os.path.isdir(parent_dir):
         raise IOError('Parent directory already exists: ' + parent_dir)
     os.makedirs(parent_dir)
 
-    copyfile(args.config_file, os.path.join(parent_dir, args.config_file))
+    dqn.write_yaml(os.path.join(parent_dir, 'config.yaml'), params)
 
     env = dqn.get_env()
     env.seed(params['seed'])
@@ -78,6 +54,30 @@ def main():
             render=False,
             verbose=params['verbose']
         )
+
+
+def main():
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        'config_file',
+        type=str
+    )
+    parser.add_argument(
+        'parent_dir',
+        type=str,
+    )
+    parser.add_argument(
+        '--repeats',
+        type=int,
+        default=1
+    )
+    args = parser.parse_args()
+
+    with open(args.config_file, 'r') as stream:
+        params = yaml.safe_load(stream)
+
+    train(args, params)
 
 
 if __name__ == '__main__':

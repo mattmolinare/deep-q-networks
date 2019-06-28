@@ -1,5 +1,8 @@
 # -*- coding: utf-8 -*-
 
+"""Validation utilties
+"""
+
 import glob
 from matplotlib import pyplot
 import numpy as np
@@ -27,7 +30,8 @@ def _get_agent(params):
 
 
 def _detect_output_dirs(parent_dir):
-    return sorted(glob.iglob(os.path.join(parent_dir, 'repeat*')))
+    return sorted(glob.iglob(os.path.join(os.path.abspath(parent_dir),
+                                          'repeat*')))
 
 
 def _get_weights_file(parent_dir):
@@ -56,6 +60,7 @@ def load_agent(parent_dir):
     agent = _get_agent(params)
 
     weights_file = _get_weights_file(parent_dir)
+    print('Loading weights from ' + weights_file)
     agent.load_weights(weights_file)
 
     return agent

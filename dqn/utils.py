@@ -1,5 +1,8 @@
 # -*- coding: utf-8 -*-
 
+"""General utilities
+"""
+
 import cProfile
 import gym
 import keras.backend as K
@@ -16,6 +19,7 @@ __all__ = [
     'new_session',
     'read_yaml',
     'set_seeds',
+    'write_yaml',
     'Profiler'
 ]
 
@@ -24,6 +28,11 @@ def read_yaml(fname):
     with open(fname, 'r') as fp:
         data = yaml.safe_load(fp)
     return data
+
+
+def write_yaml(fname, data):
+    with open(fname, 'w') as fp:
+        yaml.dump(data, fp, default_flow_style=False)
 
 
 def get_env():

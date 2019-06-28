@@ -1,5 +1,8 @@
 # -*- coding: utf-8 -*-
 
+"""DQN model architectures
+"""
+
 import keras
 import keras.backend as K
 from keras.layers import Dense, Lambda

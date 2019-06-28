@@ -1,6 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+"""DQN agents
+"""
+
 from collections import deque
 import gym
 import numpy as np
