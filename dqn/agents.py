@@ -237,6 +237,10 @@ class DQNAgent:
             if verbose:
                 print('Iteration: %i, Score: %.2f' % (i + 1, score))
 
+        if verbose:
+            print('Mean score: %.2f, Min score: %.2f, Max score: %.2f' %
+                  (scores.mean(), scores.min(), scores.max()))
+
         return scores
 
 

@@ -124,7 +124,7 @@ def plot_scores(parent_dir, fig=None, color=None, label=None, **fig_kwargs):
 
     line, = ax.plot(mean, color=color, linewidth=2, label=label)
     ax.fill_between(episodes, mean - std, mean + std, color=line.get_color(),
-                    linewidth=0, alpha=0.4)
+                    linewidth=0, alpha=0.3)
 
     ax.hlines(200, 1, num_episodes, linestyle='-.')
     ax.set_xlim(1, num_episodes)

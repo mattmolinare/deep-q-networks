@@ -12,16 +12,12 @@ def test(args):
 
     agent = dqn.load_agent(args.parent_dir)
 
-    s = np.empty((args.repeats, args.num_iterations))
+    test_scores = np.empty((args.repeats, args.num_iterations))
     for i in range(args.repeats):
-        scores = agent.test(num_iterations=args.num_iterations,
-                            render=args.render, verbose=True)
-        print('Mean score: %.2f, Min score: %.2f, Max score: %.2f' %
-              (scores.mean(), scores.min(), scores.max()))
-        s[i] = scores
+        test_scores[i] = agent.test(num_iterations=args.num_iterations,
+                                    render=args.render, verbose=True)
 
-    np.save(args.output_file, s)
-
+    np.save(args.output_file, test_scores)
 
 
 def main():
