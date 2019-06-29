@@ -126,9 +126,15 @@ class DQNAgent:
         self.model.train_on_batch(batch.state, q_t)
 
     def fit(self, num_episodes=1000, num_consecutive_episodes=100,
-            max_steps=1000, min_score=-np.inf, max_average_score=np.inf,
+            max_steps=1000, min_score=None, max_average_score=None,
             output_dir=None, save_weights_interval=5, render=False,
             verbose=True):
+
+        if min_score is None:
+            min_score = -np.inf
+
+        if max_average_score is None:
+            max_average_score = np.inf
 
         rolling_scores = deque(maxlen=num_consecutive_episodes)
         scores = []
