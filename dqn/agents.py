@@ -80,8 +80,6 @@ class DQNAgent:
         if self.t < self.batch_size:
             return self.memory
         else:
-#            idx = np.random.choice(min(self.t, self.replay_memory_size),
-#                                   size=self.batch_size, replace=False)
             idx = np.random.randint(0, min(self.t, self.replay_memory_size),
                                     size=self.batch_size)
             return self.memory[idx]
@@ -165,6 +163,7 @@ class DQNAgent:
                     if render:
                         self.env.render()
 
+                    # epsilon-greedy
                     if np.random.rand() < self.epsilon:
                         action = self.env.action_space.sample()
                     else:
