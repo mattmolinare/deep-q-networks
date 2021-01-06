@@ -208,8 +208,8 @@ class DQNAgent:
             np.save(os.path.join(output_dir, 'average_scores.npy'),
                     average_scores)
 
-    def test(self, num_iterations=100, max_steps=1000, video_dir=None,
-             render=False, verbose=True):
+    def predict(self, num_iterations=100, max_steps=1000, video_dir=None,
+                render=False, verbose=True):
 
         env = self.env
 

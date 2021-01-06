@@ -8,16 +8,16 @@ import numpy as np
 import dqn
 
 
-def test(args):
+def predict(args):
 
     agent = dqn.load_agent(args.parent_dir)
 
-    test_scores = np.empty((args.repeats, args.num_iterations))
+    scores = np.empty((args.repeats, args.num_iterations))
     for i in range(args.repeats):
-        test_scores[i] = agent.test(num_iterations=args.num_iterations,
-                                    render=args.render, verbose=True)
+        scores[i] = agent.predict(num_iterations=args.num_iterations,
+                                  render=args.render, verbose=True)
 
-    np.save(args.output_file, test_scores)
+    np.save(args.output_file, scores)
 
 
 def main():
@@ -48,7 +48,7 @@ def main():
     )
     args = parser.parse_args()
 
-    test(args)
+    predict(args)
 
 
 if __name__ == '__main__':
