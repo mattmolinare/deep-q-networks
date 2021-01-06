@@ -10,7 +10,7 @@ import dqn
 
 def predict(args):
 
-    agent = dqn.load_agent(args.parent_dir)
+    agent = dqn.load_best_agent(args.parent_dir)
 
     scores = np.empty((args.repeats, args.num_iterations))
     for i in range(args.repeats):
