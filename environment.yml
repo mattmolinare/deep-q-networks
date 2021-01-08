@@ -1,5 +1,6 @@
 name: dqn
 dependencies:
+- imageio
 - jupyter
 - keras
 - matplotlib
