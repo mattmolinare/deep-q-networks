@@ -13,6 +13,6 @@ num_consecutive_episodes: 100
 max_steps: 1000
 min_score: -500.0
 max_average_score: null
-save_weights_interval: 10
+save_weights_interval: 100
 seed: 0
 verbose: True
