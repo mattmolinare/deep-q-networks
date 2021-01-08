@@ -14,6 +14,8 @@ To activate the environment
 
 ## Running the code
 
+Set training parameters (refer to `config.yaml`).
+
 To train the agent
 
     python train.py path/to/config.yaml path/to/parent_dir
