@@ -18,6 +18,13 @@ To train the agent using default parameters
 
     python train.py config.yaml results
   
-To run inference 
+Results are written to the following tree structure:
 
-    python predict.py results scores.npy
+    results
+    ├── config.yaml
+    └── repeat*
+        ├── average_scores.npy
+        ├── model.h5
+        ├── scores.npy
+        └── weights
+            ├── episode*_score*.h5
