@@ -14,12 +14,10 @@ To activate the environment
 
 ## Running the code
 
-Set training parameters (refer to `config.yaml`).
+To train the agent using default parameters
 
-To train the agent
-
-    python train.py path/to/config.yaml path/to/parent_dir
+    python train.py config.yaml results
   
-To generate results
+To run inference 
 
-    python predict.py path/to/parent_dir path/to/output_dir
+    python predict.py results scores.npy
