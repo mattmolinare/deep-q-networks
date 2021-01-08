@@ -1,5 +1,6 @@
 name: dqn
 dependencies:
+- jupyter-notebook
 - keras
 - matplotlib
 - numpy
