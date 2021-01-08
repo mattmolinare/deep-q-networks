@@ -2,6 +2,8 @@
 
 Teach a reinforcement learning agent to play Lunar Lander with Deep-Q Learning.
 
+![](example.gif)
+
 ## Setting up the environment
 
 To create the environment
