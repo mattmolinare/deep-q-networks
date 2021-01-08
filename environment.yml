@@ -1,0 +1,13 @@
+name: dqn
+dependencies:
+- keras
+- matplotlib
+- numpy
+- pip
+- python=3.7
+- pyyaml
+- swig
+- tensorflow=1
+- pip:
+  - box2d-py
+  - git+https://github.com/mattmolinare/gym.git@225322d42bb35158de779931e1ec969c38b010aa
