@@ -214,7 +214,7 @@ class DQNAgent:
         env = self.env
 
         if video_dir is not None:
-            env = gym.wrapper.Monitor(env, video_dir, force=True)
+            env = gym.wrappers.Monitor(env, video_dir, force=True)
 
         scores = np.empty(num_iterations)
 
