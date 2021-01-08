@@ -27,4 +27,4 @@ Results are written to the following tree structure:
         ├── model.h5
         ├── scores.npy
         └── weights
-            ├── episode*_score*.h5
+            └── episode*_score*.h5
